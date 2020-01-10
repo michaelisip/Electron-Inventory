@@ -1,25 +1,6 @@
 const { app, BrowserWindow, ipcMain } = require('electron')
 const path = require('path')
-const sqlite3 = require('sqlite3').verbose();
-
-const db = new sqlite3.Database('./db/inventory.db', (err) => {
-  if (err) {
-    return console.error(err.message);
-  }
-  console.log('Connected to the chinook database.');
-});
-
-const createProductsTableSql = `CREATE TABLE IF NOT EXISTS products(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, price FLOAT);`
-db.run(createProductsTableSql,
-  sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, 
-    (err) => {
-  const insertProductSql = `INSERT INTO products (name, price) VALUES ('Test', 12.123);`
-  db.run(insertProductSql, (err) => {
-    if (err) {
-      return console.error(err)
-    }
-  })
-})
+const { db } = require('./config/db')
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -41,8 +22,11 @@ function createWindow () {
   // remove toolbars
   win.setMenu(null)
 
+  // Load database
+  let db = require('./config/db')
+
   // Open the DevTools.
-  win.webContents.openDevTools()
+  // win.webContents.openDevTools()
 
   // Emitted when the window is closed.
   win.on('closed', () => {
@@ -65,19 +49,24 @@ function createWindow () {
       }
     })
     createProductWindow.setMenu(null)
-    createProductWindow.webContents.openDevTools()
+    // createProductWindow.webContents.openDevTools()
     createProductWindow.loadFile('./src/pages/products/create.html')
   })
-  ipcMain.on('edit-product-window', () => {
-    createProductWindow = new BrowserWindow({
-      parent: win,
-    })
 
-    createProductWindow.loadFile('./src/pages/products/edit.html')
+  ipcMain.on('edit-product-window', () => {
+    editProductWindow = new BrowserWindow({
+      parent: win,
+      webPreferences: {
+        nodeIntegration: true
+      }
+    })
+    editProductWindow.setMenu(null)
+    // editProductWindow.webContents.openDevTools()
+    editProductWindow.loadFile('./src/pages/products/edit.html')
   })
+
   ipcMain.on('store-product', (name, price) => {
-    console.log(name, price)
-    db.run(`INSERT INTO products (name, price) VALUES (${name}, ${price})`)
+    // Here
   })
   ipcMain.on('update-product', () => {
     // Here

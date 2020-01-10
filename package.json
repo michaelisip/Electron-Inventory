@@ -19,7 +19,6 @@
     "electron-rebuild": "^1.8.8"
   },
   "dependencies": {
-    "chartjs": "^0.3.24",
     "sqlite3": "^4.1.1",
     "tailwindcss": "^1.1.4"
   }
